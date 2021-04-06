@@ -18,6 +18,10 @@ public final class EchoServer {
 
         final EchoServerHandler serverHandler = new EchoServerHandler();
         try {
+            /**
+             * server端涉及两种channel，ServerSocketChannel、SocketChannel；
+             * 切换ServerSocketChannel类型时，没有必要显式切换SocketChannel，是因为SocketChannel由ServerSocketChannel.accept()产生
+             */
             ServerBootstrap bootstrap = new ServerBootstrap();
             bootstrap.group(bossGroup, workGroup)
                     .channel(NioServerSocketChannel.class)
