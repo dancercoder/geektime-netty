@@ -41,6 +41,8 @@ import java.net.SocketTimeoutException;
  * A {@link SocketChannel} which is using Old-Blocking-IO
  *
  * @deprecated use NIO / EPOLL / KQUEUE transport.
+ *
+ * 使用BIO实现的SocketChannel，不推荐使用，推荐使用NIO / EPOLL / KQUEUE transport.
  */
 @Deprecated
 public class OioSocketChannel extends OioByteStreamChannel implements SocketChannel {

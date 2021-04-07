@@ -49,6 +49,9 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * <p>When not used in a {@link ServerBootstrap} context, the {@link #bind()} methods are useful for connectionless
  * transports such as datagram (UDP).</p>
+ *
+ * 这个类就是方便启动Channel的帮助类，支持方法链Fluent风格配置。
+ * 如果不是在ServerBootstrap上下文使用，bind()方法可以用来创建无连接传输（如UDP）。
  */
 public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C extends Channel> implements Cloneable {
     @SuppressWarnings("unchecked")
@@ -58,7 +61,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     volatile EventLoopGroup group;
     @SuppressWarnings("deprecation")
-    private volatile ChannelFactory<? extends C> channelFactory;
+    private volatile ChannelFactory<? extends C> channelFactory;//创建Channel的工厂类，实际是一个constructor.newInstance()，bind()方法被调用时创建Channel。
     private volatile SocketAddress localAddress;
 
     // The order in which ChannelOptions are applied is important they may depend on each other for validation
@@ -104,9 +107,12 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
      * The {@link Class} which is used to create {@link Channel} instances from.
      * You either use this or {@link #channelFactory(io.netty.channel.ChannelFactory)} if your
      * {@link Channel} implementation has no no-args constructor.
+     *
+     * 配置创建Channel的工厂类；如果Channel使用无参数的构造函数，那么可以使用这个channel()方法或者channelFactory()方法。
+     * hannelFactory()被标记为不推荐，建议使用channel()简化代码
      */
     public B channel(Class<? extends C> channelClass) {
-        return channelFactory(new ReflectiveChannelFactory<C>(
+        return channelFactory(new ReflectiveChannelFactory<C>(//使用反射创建ChannelFactory工厂类
                 ObjectUtil.checkNotNull(channelClass, "channelClass")
         ));
     }
@@ -139,6 +145,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * The {@link SocketAddress} which is used to bind the local "end" to.
+     * 配置绑定本地端的socketAddress
      */
     public B localAddress(SocketAddress localAddress) {
         this.localAddress = localAddress;
@@ -169,6 +176,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * Allow to specify a {@link ChannelOption} which is used for the {@link Channel} instances once they got
      * created. Use a value of {@code null} to remove a previous set {@link ChannelOption}.
+     * 允许指定ChannelOption，用在Channel的实例化过程中。
+     * 使用null目标值，可以remove配置。
      */
     public <T> B option(ChannelOption<T> option, T value) {
         ObjectUtil.checkNotNull(option, "option");
@@ -185,6 +194,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * Allow to specify an initial attribute of the newly created {@link Channel}.  If the {@code value} is
      * {@code null}, the attribute of the specified {@code key} is removed.
+     * 用于指定Channel的参数，如果指定值为null则删除原有配置
      */
     public <T> B attr(AttributeKey<T> key, T value) {
         ObjectUtil.checkNotNull(key, "key");
@@ -199,6 +209,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     /**
      * Validate all the parameters. Sub-classes may override this, but should
      * call the super method in that case.
+     * 验证参数，group和channelFactory不能为空
+     * 子类可以重载，但是要调用这个方法
      */
     public B validate() {
         if (group == null) {
@@ -221,6 +233,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
     /**
      * Create a new {@link Channel} and register it with an {@link EventLoop}.
+     * 创建一个Channel，并与EventLoop绑定
      */
     public ChannelFuture register() {
         validate();
@@ -268,6 +281,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         return doBind(ObjectUtil.checkNotNull(localAddress, "localAddress"));
     }
 
+    //doBind的时候要创建Channel，使用channelFactory工厂
     private ChannelFuture doBind(final SocketAddress localAddress) {
         final ChannelFuture regFuture = initAndRegister();
         final Channel channel = regFuture.channel();
@@ -304,10 +318,11 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         }
     }
 
+    //创建Channel，并与EventLoop绑定
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
-            channel = channelFactory.newChannel();
+            channel = channelFactory.newChannel();//实例化一个Channel
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
@@ -320,6 +335,7 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
             return new DefaultChannelPromise(new FailedChannel(), GlobalEventExecutor.INSTANCE).setFailure(t);
         }
 
+        //注册channel
         ChannelFuture regFuture = config().group().register(channel);
         if (regFuture.cause() != null) {
             if (channel.isRegistered()) {
@@ -337,7 +353,11 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         //    i.e. It's safe to attempt bind() or connect() now:
         //         because bind() or connect() will be executed *after* the scheduled registration task is executed
         //         because register(), bind(), and connect() are all bound to the same thread.
-
+        // 如果程序执行到当前步骤，promise没有失败，一定是下面两种情形中的一个：
+        // 1. 如果我们尝试从event loop注册，注册在这个点一定已经完成。所以，可以尝试bind()或者connect()，因为channel已经被注册；
+        // 2. 如果我们尝试从其他thread注册，注册请求已经成功添加到event loop的任务队列，后续会执行。所以，可以尝试bind()或者connect()。
+        //      因为bind() or connect() 将会在已经预定执行的registration任务之后执行；
+        //      因为register(), bind(), connect()都绑定的相同的thread。
         return regFuture;
     }
 

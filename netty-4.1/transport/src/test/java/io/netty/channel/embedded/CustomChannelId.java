@@ -18,6 +18,9 @@ package io.netty.channel.embedded;
 import io.netty.channel.ChannelId;
 import io.netty.util.internal.MathUtil;
 
+/**
+ * custom special channelId 用户指定的channelId
+ */
 public class CustomChannelId implements ChannelId {
 
     private static final long serialVersionUID = 1L;

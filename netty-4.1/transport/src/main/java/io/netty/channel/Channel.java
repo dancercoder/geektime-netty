@@ -73,6 +73,18 @@ import java.net.SocketAddress;
  * It is important to call {@link #close()} or {@link #close(ChannelPromise)} to release all
  * resources once you are done with the {@link Channel}. This ensures all resources are
  * released in a proper way, i.e. filehandles.
+ *
+ * io.netty.channel.Channel接口抽象了一个聚合，针对socket或者其他支持I/O read、write、connect、bind操作的组件。
+ * channel提供以下信息：
+ * 1. channel的当前状态，eg. 是否open？是否connected？
+ * 2. channel的ChannelConfig参数，eg. 接收buffer的大小
+ * 3. channel支持的I/O操作，比如read、write、connect、bind，以及ChannelPipeline（用于处理所有与channel相关的event、request）
+ *
+ * 所有的I/O操作都是异步的。这意味着所有的I/O调用都会立即返回，并不保证I/O操作在调用结束时已经执行。
+ * 调用返回ChannelFuture实例，用来通知调用者I/O操作已经成功、失败或者取消。
+ * channel是分层级关系的，一个channel可以有一个parent（通过parent()方法获取），这取决于它是怎么创建的。
+ * 比如，SocketChannel，是由ServerSocketChannel通过accept()产生，那么这个socketChannel的parent()就会返回serverSocketChannel。
+ * channel的层级结构取决于它归属的transport实现。比如，可以写一个新的channel实例，在创建sub-channel的时候共享相同的socket连接。
  */
 public interface Channel extends AttributeMap, ChannelOutboundInvoker, Comparable<Channel> {
 

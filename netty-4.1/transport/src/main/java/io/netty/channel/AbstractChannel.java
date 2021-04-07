@@ -39,6 +39,7 @@ import java.util.concurrent.RejectedExecutionException;
 
 /**
  * A skeletal {@link Channel} implementation.
+ * Channel的实现骨架
  */
 public abstract class AbstractChannel extends DefaultAttributeMap implements Channel {
 

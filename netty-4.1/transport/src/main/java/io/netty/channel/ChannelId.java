@@ -20,6 +20,14 @@ import java.io.Serializable;
 
 /**
  * Represents the globally unique identifier of a {@link Channel}.
+ * 标识Channel的全局唯一键
+ * 唯一键通过以下部分组成：
+ * 1. MAC address，很可能是全局唯一的
+ * 2. 当前进程ID
+ * 3. currentTimeMillis
+ * 4. nanoTime
+ * 5. 一个随机32位整数
+ * 6. 顺序增长的32位整数
  * <p>
  * The identifier is generated from various sources listed in the following:
  * <ul>
