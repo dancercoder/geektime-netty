@@ -26,6 +26,11 @@ import java.util.concurrent.TimeUnit;
  * via its {@link #next()} method. Besides this, it is also responsible for handling their
  * life-cycle and allows shutting them down in a global fashion.
  *
+ * EventExecutorGroup负责提供EventExecutor to use，通过next()方法；
+ * 另外负责处理EventExecutor的生命周期，以global fashion的方式shut down这些EventExecutor；
+ * EventExecutor是EventExecutorGroup的扩展接口
+ * EventExecutorGroup是ScheduledExecutorService的扩展接口，首先是一个ExecutorService，是一个线程池的实现
+ *
  */
 public interface EventExecutorGroup extends ScheduledExecutorService, Iterable<EventExecutor> {
 

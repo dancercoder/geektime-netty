@@ -86,6 +86,8 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
         super(nThreads, threadFactory, selectorProvider, selectStrategyFactory, RejectedExecutionHandlers.reject());
     }
 
+    // selectorProvider根据平台不同有不同的实现，windows平台对应的实现就是WindowsSelectorProvider
+    //
     public NioEventLoopGroup(
             int nThreads, Executor executor, final SelectorProvider selectorProvider) {
         this(nThreads, executor, selectorProvider, DefaultSelectStrategyFactory.INSTANCE);

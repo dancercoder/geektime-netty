@@ -49,7 +49,7 @@ public final class EchoServer {
         }
 
         // Configure the server.
-        //创建主 Reactor
+        //创建主 Reactor, 实际上EventLoopGroup就是一个线程池
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         //创建从 Reactor
         EventLoopGroup workerGroup = new NioEventLoopGroup();

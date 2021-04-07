@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Default implementation which uses simple round-robin to choose next {@link EventExecutor}.
+ * 是EventExecutorChooserFactory的默认实现，使用round-robin的方式选择下一个使用的EventExecutor
  */
 @UnstableApi
 public final class DefaultEventExecutorChooserFactory implements EventExecutorChooserFactory {
@@ -30,6 +31,9 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
 
     private DefaultEventExecutorChooserFactory() { }
 
+    // 创建一个Chooser
+    // 如果待选的executor列表长度是2的幂，选用PowerOfTwoEventExecutorChooser；
+    // 如果不是2的幂，选用GenericEventExecutorChooser
     @Override
     public EventExecutorChooser newChooser(EventExecutor[] executors) {
         if (isPowerOfTwo(executors.length)) {
@@ -53,6 +57,7 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
 
         @Override
         public EventExecutor next() {
+            // 2的幂求与
             return executors[idx.getAndIncrement() & executors.length - 1];
         }
     }
@@ -70,6 +75,7 @@ public final class DefaultEventExecutorChooserFactory implements EventExecutorCh
 
         @Override
         public EventExecutor next() {
+            // 按照列表的序号循环使用
             return executors[(int) Math.abs(idx.getAndIncrement() % executors.length)];
         }
     }
