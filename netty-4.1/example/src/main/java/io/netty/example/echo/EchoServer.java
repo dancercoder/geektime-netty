@@ -49,8 +49,10 @@ public final class EchoServer {
         }
 
         // Configure the server.
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);//创建主 Reactor
-        EventLoopGroup workerGroup = new NioEventLoopGroup();//创建从 Reactor
+        //创建主 Reactor
+        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        //创建从 Reactor
+        EventLoopGroup workerGroup = new NioEventLoopGroup();
         final EchoServerHandler serverHandler = new EchoServerHandler();
         try {
             ServerBootstrap b = new ServerBootstrap();

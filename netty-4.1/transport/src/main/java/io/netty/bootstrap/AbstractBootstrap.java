@@ -60,8 +60,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     private static final Map.Entry<AttributeKey<?>, Object>[] EMPTY_ATTRIBUTE_ARRAY = new Map.Entry[0];
 
     volatile EventLoopGroup group;
+    //创建Channel的工厂类，实际是一个constructor.newInstance()，bind()方法被调用时创建Channel。
     @SuppressWarnings("deprecation")
-    private volatile ChannelFactory<? extends C> channelFactory;//创建Channel的工厂类，实际是一个constructor.newInstance()，bind()方法被调用时创建Channel。
+    private volatile ChannelFactory<? extends C> channelFactory;
     private volatile SocketAddress localAddress;
 
     // The order in which ChannelOptions are applied is important they may depend on each other for validation
@@ -322,7 +323,8 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
-            channel = channelFactory.newChannel();//实例化一个Channel
+            //实例化一个Channel
+            channel = channelFactory.newChannel();
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
