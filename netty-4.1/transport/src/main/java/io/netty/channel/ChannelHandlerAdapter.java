@@ -23,14 +23,17 @@ import java.util.Map;
 
 /**
  * Skeleton implementation of a {@link ChannelHandler}.
+ * ChanelHandler接口的实现骨架
  */
 public abstract class ChannelHandlerAdapter implements ChannelHandler {
 
     // Not using volatile because it's used only for a sanity check.
+    // 只用作完整性校验，不需要volatile
     boolean added;
 
     /**
      * Throws {@link IllegalStateException} if {@link ChannelHandlerAdapter#isSharable()} returns {@code true}
+     * 校验，保证not sharable
      */
     protected void ensureNotSharable() {
         if (isSharable()) {
@@ -41,6 +44,8 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
     /**
      * Return {@code true} if the implementation is {@link Sharable} and so can be added
      * to different {@link ChannelPipeline}s.
+     * 如果ChannelHandler可以被添加到不同的ChannelPipeline，说明是sharable的，实现这个方法并返回true；
+     * 只需要在ChannelHandler上添加@Sharable注解就可以了
      */
     public boolean isSharable() {
         /**
@@ -89,6 +94,7 @@ public abstract class ChannelHandlerAdapter implements ChannelHandler {
     @Override
     @Deprecated
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        //ChannelHandlerContext向后传递异常给ChannelPipeline中的下一个ChannelHandler
         ctx.fireExceptionCaught(cause);
     }
 }

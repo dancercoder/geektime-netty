@@ -37,6 +37,9 @@ import java.util.List;
  * | ABC | DEF | GHI |
  * +-----+-----+-----+
  * </pre>
+ *
+ * 定长封装成帧解码方式，对接收的字节流分成长度相同的字符串
+ * 字节定长？还是字符定长？汉字怎么支持？
  */
 public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
 
@@ -62,6 +65,7 @@ public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
 
     /**
      * Create a frame out of the {@link ByteBuf} and return it.
+     * 解码成io.netty.buffer.ByteBuf
      *
      * @param   ctx             the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
      * @param   in              the {@link ByteBuf} from which to read data
@@ -73,6 +77,7 @@ public class FixedLengthFrameDecoder extends ByteToMessageDecoder {
         if (in.readableBytes() < frameLength) {
             return null;
         } else {
+            //长度不够，读取剩余的数据切片
             return in.readRetainedSlice(frameLength);
         }
     }

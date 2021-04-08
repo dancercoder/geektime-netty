@@ -85,6 +85,7 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
      */
     private static final int INIT = 0;
 
+    //使用默认ChannelPipeline
     private final DefaultChannelPipeline pipeline;
     private final String name;
     private final boolean ordered;
@@ -148,6 +149,9 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
 
     static void invokeChannelRegistered(final AbstractChannelHandlerContext next) {
         EventExecutor executor = next.executor();
+        // 判断executor是不是已经在EventLoop中运行
+        // 对于SingleThreadEventExecutor就是判断next.executor是不是当前线程
+        // 如果是，则直接在当前线程调用；不是的话，使用对应线程执行
         if (executor.inEventLoop()) {
             next.invokeChannelRegistered();
         } else {
@@ -319,6 +323,7 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         }
     }
 
+    //向后面channelHandler传递
     @Override
     public ChannelHandlerContext fireUserEventTriggered(final Object event) {
         invokeUserEventTriggered(findContextInbound(MASK_USER_EVENT_TRIGGERED), event);
@@ -873,6 +878,7 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return false;
     }
 
+    //入站从前往后查找下一个ChannelHandlerContext，被@Skip注释的跳过
     private AbstractChannelHandlerContext findContextInbound(int mask) {
         AbstractChannelHandlerContext ctx = this;
         EventExecutor currentExecutor = executor();
@@ -882,6 +888,7 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return ctx;
     }
 
+    //出站从后往前找下一个ChannelHandlerContext，被@Skip注释的跳过
     private AbstractChannelHandlerContext findContextOutbound(int mask) {
         AbstractChannelHandlerContext ctx = this;
         EventExecutor currentExecutor = executor();
@@ -891,6 +898,14 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
         return ctx;
     }
 
+    /**
+     *
+     * @param ctx
+     * @param currentExecutor
+     * @param mask 16位标记，区分是入站event还是出站event
+     * @param onlyMask 用于区分入站、出站event
+     * @return
+     */
     private static boolean skipContext(
             AbstractChannelHandlerContext ctx, EventExecutor currentExecutor, int mask, int onlyMask) {
         // Ensure we correctly handle MASK_EXCEPTION_CAUGHT which is not included in the MASK_EXCEPTION_CAUGHT
@@ -958,6 +973,8 @@ abstract class AbstractChannelHandlerContext implements ChannelHandlerContext, R
      * If this method returns {@code false} we will not invoke the {@link ChannelHandler} but just forward the event.
      * This is needed as {@link DefaultChannelPipeline} may already put the {@link ChannelHandler} in the linked-list
      * but not called {@link ChannelHandler#handlerAdded(ChannelHandlerContext)}.
+     *
+     * 尽最大努力确认ChannelHandler的handlerAdded方法已经被调用，如果没有则返回false，如果调用了或者不能判断返回true
      */
     private boolean invokeHandler() {
         // Store in local variable to reduce volatile reads.

@@ -28,6 +28,7 @@ import java.lang.annotation.Target;
 /**
  * Handles an I/O event or intercepts an I/O operation, and forwards it to its next handler in
  * its {@link ChannelPipeline}.
+ * ChannelHandler处理IO事件、拦截IO操作，传递IO事件、IO操作到ChannelPipeline中的下一个Handler
  *
  * <h3>Sub-types</h3>
  * <p>
@@ -37,6 +38,9 @@ import java.lang.annotation.Target;
  * <li>{@link ChannelOutboundHandler} to handle outbound I/O operations.</li>
  * </ul>
  * </p>
+ * ChannelHandler不提供很多方法，通常需要实现它的子接口：
+ * ChannelInboundHandler处理入站的事件
+ * ChannelOutboundHandler处理出站的事件
  * <p>
  * Alternatively, the following adapter classes are provided for your convenience:
  * <ul>
@@ -45,6 +49,11 @@ import java.lang.annotation.Target;
  * <li>{@link ChannelDuplexHandler} to handle both inbound and outbound events</li>
  * </ul>
  * </p>
+ * 为了方便接口的实现，Netty提供了一下模板类
+ * ChannelInboundHandlerAdapter实现ChannelInboundHandler处理入站的事件
+ * ChannelOutboundHandlerAdapter实现ChannelOutboundHandler处理出站的事件
+ * ChannelDuplexHandler继承ChannelInboundHandlerAdapter，并且实现ChannelOutboundHandler处理入站、出站的事件
+ *
  * <p>
  * For more information, please refer to the documentation of each subtype.
  * </p>
@@ -57,6 +66,10 @@ import java.lang.annotation.Target;
  * context object, the {@link ChannelHandler} can pass events upstream or
  * downstream, modify the pipeline dynamically, or store the information
  * (using {@link AttributeKey}s) which is specific to the handler.
+ *
+ * ChannelHandler提供ChannelHandlerContext对象。因为ChannelHandler需要与ChannelPipeline进行交互。
+ * 使用ChannelHandlerContext对象，ChannelHandler可以上行、下行双向地传递事件；动态地修改pipeline；
+ * 或者存储handler的特有信息
  *
  * <h3>State management</h3>
  *
@@ -100,6 +113,9 @@ import java.lang.annotation.Target;
  *         channel.pipeline().addLast("handler", <b>new DataServerHandler()</b>);
  *     }
  * }
+ *
+ * 因为handler实例保存了归属one connection的状态变脸，所以需要为每一个channel创建一个handler实例，这样才能
+ * 避免竞态条件的发生（非授权客户端可能获取到敏感信息）
  *
  * </pre>
  *
@@ -160,10 +176,14 @@ import java.lang.annotation.Target;
  * annotation, it means you can create an instance of the handler just once and
  * add it to one or more {@link ChannelPipeline}s multiple times without
  * a race condition.
+ * 如果一个ChannelHandler被标注了@Sharable，标识可以创建一个ChannelHandler实例，然后多次添加到不同的
+ * ChannelPipeline中，而不用考虑竞态条件的发生。
  * <p>
  * If this annotation is not specified, you have to create a new handler
  * instance every time you add it to a pipeline because it has unshared state
  * such as member variables.
+ *
+ * 如果没有被标注@Sharable，每次添加到一个pipeline都需要创建一个新的ChannelHandler实例
  * <p>
  * This annotation is provided for documentation purpose, just like
  * <a href="http://www.javaconcurrencyinpractice.com/annotations/doc/">the JCIP annotations</a>.
@@ -179,12 +199,14 @@ public interface ChannelHandler {
 
     /**
      * Gets called after the {@link ChannelHandler} was added to the actual context and it's ready to handle events.
+     * ChannelHandler被成功添加并且可以开始处理事件时被回调
      */
     void handlerAdded(ChannelHandlerContext ctx) throws Exception;
 
     /**
      * Gets called after the {@link ChannelHandler} was removed from the actual context and it doesn't handle events
      * anymore.
+     * ChannelHandler被删除不再处理事件时被回调
      */
     void handlerRemoved(ChannelHandlerContext ctx) throws Exception;
 
@@ -193,6 +215,8 @@ public interface ChannelHandler {
      *
      * @deprecated if you want to handle this event you should implement {@link ChannelInboundHandler} and
      * implement the method there.
+     * 异常抛出时被回调
+     * 如果希望在异常抛出时处理event，那么需要实现ChannelInboundHandler接口的这个方法。
      */
     @Deprecated
     void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception;

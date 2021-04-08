@@ -23,6 +23,8 @@ public interface ChannelInboundInvoker {
      * This will result in having the  {@link ChannelInboundHandler#channelRegistered(ChannelHandlerContext)} method
      * called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
      * {@link Channel}.
+     * Channel绑定到了EventLoop，向下一个handler传递
+     * 导致pipeline中下一个inboundhandler调用channelRegistered
      */
     ChannelInboundInvoker fireChannelRegistered();
 
@@ -32,6 +34,9 @@ public interface ChannelInboundInvoker {
      * This will result in having the  {@link ChannelInboundHandler#channelUnregistered(ChannelHandlerContext)} method
      * called of the next  {@link ChannelInboundHandler} contained in the  {@link ChannelPipeline} of the
      * {@link Channel}.
+     *
+     * Channel从eventloop解除绑定，向下一个handler传递
+     * pipeline中下一个ChannelInboundHandler调用channelUnregistered方法
      */
     ChannelInboundInvoker fireChannelUnregistered();
 

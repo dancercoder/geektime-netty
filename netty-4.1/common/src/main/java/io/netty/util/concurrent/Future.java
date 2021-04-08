@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * The result of an asynchronous operation.
+ * 异步操作立即返回的结果
+ * jdk中的Future定义标识异步操作的立即返回结果。
  */
 @SuppressWarnings("ClassNameSameAsAncestorName")
 public interface Future<V> extends java.util.concurrent.Future<V> {

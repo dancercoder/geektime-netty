@@ -28,6 +28,8 @@ import java.nio.channels.Channels;
  * Enables a {@link ChannelHandler} to interact with its {@link ChannelPipeline}
  * and other handlers. Among other things a handler can notify the next {@link ChannelHandler} in the
  * {@link ChannelPipeline} as well as modify the {@link ChannelPipeline} it belongs to dynamically.
+ * ChannelHandlerContext用于支持ChannelHandler与它归属的ChannelPipeline和其他ChannelHandler交互。
+ * 其他的，handler可以通知下一个handler，动态修改它归属的ChannelPipeline
  *
  * <h3>Notify</h3>
  *
@@ -37,12 +39,13 @@ import java.nio.channels.Channels;
  * Please refer to {@link ChannelPipeline} to understand how an event flows.
  *
  * <h3>Modifying a pipeline</h3>
- *
+ * 可以通过pipeline()方法获取当前handler归属的pipeline。可以动态地在pipeline中插入、删除、替换handler
  * You can get the {@link ChannelPipeline} your handler belongs to by calling
  * {@link #pipeline()}.  A non-trivial application could insert, remove, or
  * replace handlers in the pipeline dynamically at runtime.
  *
  * <h3>Retrieving for later use</h3>
+ * 可以持有ChannelHandlerContext对象等待后续使用，比如可以在handler的方法调用之外触发event，甚至在不同的线程中
  *
  * You can keep the {@link ChannelHandlerContext} for later use, such as
  * triggering an event outside the handler methods, even from a different thread.
@@ -63,6 +66,8 @@ import java.nio.channels.Channels;
  * </pre>
  *
  * <h3>Storing stateful information</h3>
+ * 可以使用AttributeKey保存、访问与ChannelHandler、Channel以及归属ChannelHandlerContext的状态信息。
+ *
  *
  * {@link #attr(AttributeKey)} allow you to
  * store and access stateful information that is related with a {@link ChannelHandler} / {@link Channel} and its
@@ -70,6 +75,8 @@ import java.nio.channels.Channels;
  * ways to manage stateful information.
  *
  * <h3>A handler can have more than one {@link ChannelHandlerContext}</h3>
+ * 一个ChannelHandler可以持有多个ChannelHandlerContext，这意味着一个ChannelHandler实例可以
+ * 被不同的ChannelHandlerContext调用（在它被添加到多次添加、或者添加到不同的ChannelPipeline中的时候，@Sharable标注的ChannelHandler）
  *
  * Please note that a {@link ChannelHandler} instance can be added to more than
  * one {@link ChannelPipeline}.  It means a single {@link ChannelHandler}
@@ -90,11 +97,13 @@ public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvok
 
     /**
      * Return the {@link Channel} which is bound to the {@link ChannelHandlerContext}.
+     * 获取绑定context的channel
      */
     Channel channel();
 
     /**
      * Returns the {@link EventExecutor} which is used to execute an arbitrary task.
+     * 获取用于执行任务的EventExecutor
      */
     EventExecutor executor();
 
@@ -102,11 +111,13 @@ public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvok
      * The unique name of the {@link ChannelHandlerContext}.The name was used when then {@link ChannelHandler}
      * was added to the {@link ChannelPipeline}. This name can also be used to access the registered
      * {@link ChannelHandler} from the {@link ChannelPipeline}.
+     * context的唯一名，在handler被添加到pipeline中时会用到。也可以用来从pipeline中访问注册的handler
      */
     String name();
 
     /**
      * The {@link ChannelHandler} that is bound this {@link ChannelHandlerContext}.
+     * 获取绑定到context的handler
      */
     ChannelHandler handler();
 
@@ -114,6 +125,7 @@ public interface ChannelHandlerContext extends AttributeMap, ChannelInboundInvok
      * Return {@code true} if the {@link ChannelHandler} which belongs to this context was removed
      * from the {@link ChannelPipeline}. Note that this method is only meant to be called from with in the
      * {@link EventLoop}.
+     * 如果handler已经从pipeline中删除则返回true
      */
     boolean isRemoved();
 

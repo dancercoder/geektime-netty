@@ -220,6 +220,7 @@ public class DefaultChannelPipeline implements ChannelPipeline {
                 return this;
             }
         }
+        //触发ChannelHandler管理流程
         callHandlerAdded0(newCtx);
         return this;
     }
