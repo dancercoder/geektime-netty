@@ -432,7 +432,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
     }
 
     @Override
-    protected void run() {
+    protected void  run() {
         int selectCnt = 0;
         for (;;) {
             try {

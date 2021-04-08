@@ -47,6 +47,10 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
     /**
      * Create a new instance using the specified number of threads, {@link ThreadFactory} and the
      * {@link SelectorProvider} which is returned by {@link SelectorProvider#provider()}.
+     * 创建NioEventLoopGroup实例。
+     * 指定线程数
+     * 指定ThreadFactory
+     * 指定SelectorProvider使用SelectorProvider.provider()的返回值。
      */
     public NioEventLoopGroup(int nThreads) {
         this(nThreads, (Executor) null);
@@ -141,6 +145,8 @@ public class NioEventLoopGroup extends MultithreadEventLoopGroup {
         }
     }
 
+    // 使用NioEventLoopGroup的话默认产生的Thread就是NioEventLoop
+    // NioEventLoop
     @Override
     protected EventLoop newChild(Executor executor, Object... args) throws Exception {
         EventLoopTaskQueueFactory queueFactory = args.length == 4 ? (EventLoopTaskQueueFactory) args[3] : null;

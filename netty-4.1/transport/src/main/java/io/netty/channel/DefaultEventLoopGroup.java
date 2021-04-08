@@ -20,6 +20,7 @@ import java.util.concurrent.ThreadFactory;
 
 /**
  * {@link MultithreadEventLoopGroup} which must be used for the local transport.
+ * 默认的多线程EventLoopGroup，用作本地通信使用
  */
 public class DefaultEventLoopGroup extends MultithreadEventLoopGroup {
 
@@ -68,6 +69,7 @@ public class DefaultEventLoopGroup extends MultithreadEventLoopGroup {
         super(nThreads, executor);
     }
 
+    // 产生新的EventLoop，在MultiThreadEventExecutorGroup被实例化时英语创建children线程数组
     @Override
     protected EventLoop newChild(Executor executor, Object... args) throws Exception {
         return new DefaultEventLoop(this, executor);

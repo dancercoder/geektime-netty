@@ -33,6 +33,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
 
     private final EventExecutor[] children;
     private final Set<EventExecutor> readonlyChildren;
+    // 表示已经停止执行的thread数量
     private final AtomicInteger terminatedChildren = new AtomicInteger();
     private final Promise<?> terminationFuture = new DefaultPromise(GlobalEventExecutor.INSTANCE);
     private final EventExecutorChooserFactory.EventExecutorChooser chooser;
@@ -74,8 +75,9 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
         }
 
         if (executor == null) {
-            // 没有指定Executor的时候，使用ThreadPerTaskExecutor，每个任务一个executor
-            // thread工厂
+            // 没有指定Executor的时候，使用ThreadPerTaskExecutor
+            // 每个任务一个executorthread的工厂
+            // 每调用一次产生一个FastThreadLocalThread
             executor = new ThreadPerTaskExecutor(newDefaultThreadFactory());
         }
 
@@ -111,8 +113,10 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             }
         }
 
+        // 使用默认的选择起，2的幂次、轮询方式两种
         chooser = chooserFactory.newChooser(children);
 
+        // 在线程终止时，通知group更新terminatedChildren的信息
         final FutureListener<Object> terminationListener = new FutureListener<Object>() {
             @Override
             public void operationComplete(Future<Object> future) throws Exception {
@@ -122,6 +126,7 @@ public abstract class MultithreadEventExecutorGroup extends AbstractEventExecuto
             }
         };
 
+        // 为每一个Executor添加终止监听
         for (EventExecutor e: children) {
             e.terminationFuture().addListener(terminationListener);
         }

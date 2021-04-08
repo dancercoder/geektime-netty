@@ -371,6 +371,13 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
         // This method is invoked before channelRegistered() is triggered.  Give user handlers a chance to set up
         // the pipeline in its channelRegistered() implementation.
+        // eventLoop执行的入口，在channel完成注册之后，进入onComplete回调函数，通过eventLoop.execute()指定处理线程
+        // 执行AbstractEventExecutorGroup的execute()方法；
+        // 执行SingleThreadEventExecutor的execute()方法；
+        // 调用SingleThreadEventExecutor的startThread()方法；
+        // 调用SingleThreadEventExecutor的doStartThread()方法，其中run方法中执行了SingleThreadEventExecutor.this.run();
+        // 该run方法在NioEventLoop中的实现是一个无限循环；
+        // 该run方法在EpollEventLoop中的实现也是一个无限循环；
         channel.eventLoop().execute(new Runnable() {
             @Override
             public void run() {

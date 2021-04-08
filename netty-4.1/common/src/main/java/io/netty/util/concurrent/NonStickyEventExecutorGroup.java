@@ -33,6 +33,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * {@link EventExecutorGroup} which will preserve {@link Runnable} execution order but makes no guarantees about what
  * {@link EventExecutor} (and therefore {@link Thread}) will be used to execute the {@link Runnable}s.
+ * EventExecutorGroup的实现，保存Runnable的执行顺序，但是不保证哪个EventExecutor/Thread来执行这个Runnable。
+ * EventExecutorGroup#next()必须不能返回OrderedEventExecutor类型的executor
  *
  * <p>The {@link EventExecutorGroup#next()} for the wrapped {@link EventExecutorGroup} must <strong>NOT</strong> return
  * executors of type {@link OrderedEventExecutor}.
@@ -63,6 +65,7 @@ public final class NonStickyEventExecutorGroup implements EventExecutorGroup {
         Iterator<EventExecutor> executors = ObjectUtil.checkNotNull(group, "group").iterator();
         while (executors.hasNext()) {
             EventExecutor executor = executors.next();
+            //检查EventExecutorGroup中的EventExecutor，如果发现OrderedEventExecutor，就报错
             if (executor instanceof OrderedEventExecutor) {
                 throw new IllegalArgumentException("EventExecutorGroup " + group
                         + " contains OrderedEventExecutors: " + executor);
@@ -211,6 +214,7 @@ public final class NonStickyEventExecutorGroup implements EventExecutorGroup {
         group.execute(command);
     }
 
+    //NonStickyEventExecutorGroup通过next()方法返回的EventExecutor
     private static final class NonStickyOrderedEventExecutor extends AbstractEventExecutor
             implements Runnable, OrderedEventExecutor {
         private final EventExecutor executor;

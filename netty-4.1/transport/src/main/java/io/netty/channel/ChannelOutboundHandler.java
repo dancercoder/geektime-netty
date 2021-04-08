@@ -19,6 +19,7 @@ import java.net.SocketAddress;
 
 /**
  * {@link ChannelHandler} which will get notified for IO-outbound-operations.
+ * ChannelOutBoundHandler在处理IO-outbound操作的时候被通知
  */
 public interface ChannelOutboundHandler extends ChannelHandler {
     /**
