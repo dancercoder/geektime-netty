@@ -28,6 +28,11 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * A special {@link ChannelInboundHandler} which offers an easy way to initialize a {@link Channel} once it was
  * registered to its {@link EventLoop}.
+ * ChannelInitializer是一个特殊的ChannelInBoundHandler，在Channel注册到EventLoop之后初始化Channel。
+ * 最长间的用法是，在Bootstrap#handler(ChannelHandler)、ServerBootstrap#handler(ChannelHandler)、
+ * ServerBootstrap#childHandler(ChannelHandler)中，构建Channel的pipeline。
+ *
+ * initChannel()方法在channelRegistered()、handlerAdded()中被调用
  *
  * Implementations are most often used in the context of {@link Bootstrap#handler(ChannelHandler)} ,
  * {@link ServerBootstrap#handler(ChannelHandler)} and {@link ServerBootstrap#childHandler(ChannelHandler)} to
@@ -70,6 +75,7 @@ public abstract class ChannelInitializer<C extends Channel> extends ChannelInbou
      */
     protected abstract void initChannel(C ch) throws Exception;
 
+    //正常情况下channelRegistered中调用initChannel()应该不会发生，因为已经在handlerAdd中调用，并删除了ChannelInitializer
     @Override
     @SuppressWarnings("unchecked")
     public final void channelRegistered(ChannelHandlerContext ctx) throws Exception {

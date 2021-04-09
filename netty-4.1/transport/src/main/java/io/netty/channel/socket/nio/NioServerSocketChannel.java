@@ -42,6 +42,8 @@ import java.util.Map;
 /**
  * A {@link io.netty.channel.socket.ServerSocketChannel} implementation which uses
  * NIO selector based implementation to accept new connections.
+ * 这边有一个Netty Channel与java.net.socket Channel聚合的方式，
+ * 使用NioServerSocketChannel封装了java.net.socket.ServerSocketChannel
  */
 public class NioServerSocketChannel extends AbstractNioMessageChannel
                              implements io.netty.channel.socket.ServerSocketChannel {
@@ -70,8 +72,12 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     /**
      * Create a new instance
+     * 创建NioServerSocketChannel入口函数
      */
     public NioServerSocketChannel() {
+        //使用平台相关的SelectorProvider，windows平台的WindowsSelectorProvider、Mac的KqueueSelectorProvider
+        //newSocket()方法调用provider的openServerSocketChannel()方法，获得ServerSocketChannel
+        //进一步调用本类的NioServerSocketChannel(ServerSocketChannel channel)
         this(newSocket(DEFAULT_SELECTOR_PROVIDER));
     }
 
@@ -86,7 +92,10 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
      * Create a new instance using the given {@link ServerSocketChannel}.
      */
     public NioServerSocketChannel(ServerSocketChannel channel) {
+        //调用AbstractNioChannel构造函数，设置not blocking，selectionKey关注OP_ACCEPT
+        //完成设置，但是channel还没有注册到selector
         super(null, channel, SelectionKey.OP_ACCEPT);
+        //javaChannel()及super.javaChannel()都会返回channel
         config = new NioServerSocketChannelConfig(this, javaChannel().socket());
     }
 
@@ -144,10 +153,13 @@ public class NioServerSocketChannel extends AbstractNioMessageChannel
 
     @Override
     protected int doReadMessages(List<Object> buf) throws Exception {
+        //从Java的ServerSocketChannel中读取消息，获取到一个JDK SocketChannel
         SocketChannel ch = SocketUtils.accept(javaChannel());
 
         try {
             if (ch != null) {
+                // 这里添加了Channel类型，ServerBootStrap中pipeline中添加ChannelInitializer
+                // 的initChannel处理类型就是Channel
                 buf.add(new NioSocketChannel(this, ch));
                 return 1;
             }

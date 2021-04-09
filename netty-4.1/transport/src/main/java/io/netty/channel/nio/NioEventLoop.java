@@ -431,6 +431,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    //在SingleThreadEventExecutor.doStartThread()方法中被调用
     @Override
     protected void  run() {
         int selectCnt = 0;
@@ -454,6 +455,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                         nextWakeupNanos.set(curDeadlineNanos);
                         try {
                             if (!hasTasks()) {
+                                //select监听事件
                                 strategy = select(curDeadlineNanos);
                             }
                         } finally {
@@ -480,6 +482,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
                 boolean ranTasks;
                 if (ioRatio == 100) {
                     try {
+                        //有监听事件，对事件进行处理
                         if (strategy > 0) {
                             processSelectedKeys();
                         }
@@ -576,6 +579,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
         }
     }
 
+    //处理监听事件，事件类型可以通过selector.selectKeys()方法取回
     private void processSelectedKeys() {
         if (selectedKeys != null) {
             processSelectedKeysOptimized();
@@ -693,6 +697,7 @@ public final class NioEventLoop extends SingleThreadEventLoop {
             return;
         }
 
+        //监听事件的具体处理逻辑
         try {
             int readyOps = k.readyOps();
             // We first need to call finishConnect() before try to trigger a read(...) or write(...) as otherwise

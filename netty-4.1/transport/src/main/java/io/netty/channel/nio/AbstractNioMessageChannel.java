@@ -94,6 +94,8 @@ public abstract class AbstractNioMessageChannel extends AbstractNioChannel {
                 int size = readBuf.size();
                 for (int i = 0; i < size; i ++) {
                     readPending = false;
+                    // 调用ServerBootstrapAcceptor的channelRead()方法
+                    // channelRead()中在chileGroup中注册channel，走入监听的循环
                     pipeline.fireChannelRead(readBuf.get(i));
                 }
                 readBuf.clear();

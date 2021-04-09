@@ -477,6 +477,7 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
 
             AbstractChannel.this.eventLoop = eventLoop;
 
+            //BOSS线程启动入口：eventLoop.execute
             if (eventLoop.inEventLoop()) {
                 register0(promise);
             } else {
@@ -506,12 +507,15 @@ public abstract class AbstractChannel extends DefaultAttributeMap implements Cha
                     return;
                 }
                 boolean firstRegistration = neverRegistered;
+                //将SelectableChannel注册到selector上
                 doRegister();
                 neverRegistered = false;
                 registered = true;
 
                 // Ensure we call handlerAdded(...) before we actually notify the promise. This is needed as the
                 // user may already fire events through the pipeline in the ChannelFutureListener.
+                // 保证在实际通知future之前调用handlerAdded()，这是必要的，因为用户可能在ChannelFutureListener中已经出发了events
+                // listener中的方法会在completion时被调用
                 pipeline.invokeHandlerAddedIfNeeded();
 
                 safeSetSuccess(promise);

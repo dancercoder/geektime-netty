@@ -27,6 +27,7 @@ import java.net.StandardSocketOptions;
 
 /**
  * A {@link ChannelConfig} for a {@link SocketChannel}.
+ * 针对SocketChannel的ChannelConfig
  *
  * <h3>Available options</h3>
  *

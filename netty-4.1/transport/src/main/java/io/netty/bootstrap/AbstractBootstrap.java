@@ -282,7 +282,9 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         return doBind(ObjectUtil.checkNotNull(localAddress, "localAddress"));
     }
 
-    //doBind的时候要创建Channel，使用channelFactory工厂
+    // doBind的时候要创建Channel，使用channelFactory工厂
+    // 关键步骤：创建channel，regFuture中的channel是initAndRegister()中放进去的
+    // 需要关注channel的产生过程，因为后续ServerBootstrap监听这个channel的关闭，作为server的停止
     private ChannelFuture doBind(final SocketAddress localAddress) {
         final ChannelFuture regFuture = initAndRegister();
         final Channel channel = regFuture.channel();
@@ -292,12 +294,14 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
 
         if (regFuture.isDone()) {
             // At this point we know that the registration was complete and successful.
+            // 注册完成，直接调用doBind0()
             ChannelPromise promise = channel.newPromise();
             doBind0(regFuture, channel, localAddress, promise);
             return promise;
         } else {
             // Registration future is almost always fulfilled already, but just in case it's not.
             final PendingRegistrationPromise promise = new PendingRegistrationPromise(channel);
+            // 添加监听注册完成，在registration完成时调用doBind0()
             regFuture.addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
@@ -319,12 +323,13 @@ public abstract class AbstractBootstrap<B extends AbstractBootstrap<B, C>, C ext
         }
     }
 
-    //创建Channel，并与EventLoop绑定
+    // 重点步骤，需关注channel的产生过程
     final ChannelFuture initAndRegister() {
         Channel channel = null;
         try {
-            //实例化一个Channel
+            //使用NioServerSocketChannel反射的Factory创建channel
             channel = channelFactory.newChannel();
+            //初始化channel，根据ServerBootstrap、Bootstrap实现不同
             init(channel);
         } catch (Throwable t) {
             if (channel != null) {
