@@ -34,6 +34,8 @@ import static java.lang.Integer.MAX_VALUE;
 /**
  * {@link ChannelInboundHandlerAdapter} which decodes bytes in a stream-like fashion from one {@link ByteBuf} to an
  * other Message type.
+ * ByteToMessageDecoder是一个ChannelInboundHandlerAdapter的实现，负责按流的方式解码，将消息从ByteBuf转换为特定的消息类型
+ * 数据帧解码器
  *
  * For example here is an implementation which reads all readable bytes from
  * the input {@link ByteBuf} and create a new {@link ByteBuf}.
@@ -553,12 +555,14 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     /**
      * Cumulate {@link ByteBuf}s.
+     * 堆积器
      */
     public interface Cumulator {
         /**
          * Cumulate the given {@link ByteBuf}s and return the {@link ByteBuf} that holds the cumulated bytes.
          * The implementation is responsible to correctly handle the life-cycle of the given {@link ByteBuf}s and so
          * call {@link ByteBuf#release()} if a {@link ByteBuf} is fully consumed.
+         * 收集ByteBuf到一个ByteBuf中
          */
         ByteBuf cumulate(ByteBufAllocator alloc, ByteBuf cumulation, ByteBuf in);
     }

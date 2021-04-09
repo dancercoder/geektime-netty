@@ -25,6 +25,7 @@ import java.util.List;
 
 /**
  * A Codec for on-the-fly encoding/decoding of bytes to messages and vise-versa.
+ * 用作byte to message编解码的编解码器
  *
  * This can be thought of as a combination of {@link ByteToMessageDecoder} and {@link MessageToByteEncoder}.
  *
