@@ -78,6 +78,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
     /**
      * Cumulate {@link ByteBuf}s by merge them into one {@link ByteBuf}'s, using memory copies.
+     * 通过将ByteBuf合并到一个ByteBuf中实现buffer的积累，使用内存复制的方式
      */
     public static final Cumulator MERGE_CUMULATOR = new Cumulator() {
         @Override
@@ -113,6 +114,8 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
      * Cumulate {@link ByteBuf}s by add them to a {@link CompositeByteBuf} and so do no memory copy whenever possible.
      * Be aware that {@link CompositeByteBuf} use a more complex indexing implementation so depending on your use-case
      * and the decoder implementation this may be slower then just use the {@link #MERGE_CUMULATOR}.
+     * 尽量不使用内存复制，使用组合的方式将ByteBuf添加到CompositeByteBuf
+     * 注意，CompositeByteBuf使用更为复杂的下标，所以根据实际的应用场景、解码器的实现，可能会比MERGE_CUMULATOR要慢
      */
     public static final Cumulator COMPOSITE_CUMULATOR = new Cumulator() {
         @Override
@@ -420,6 +423,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
     /**
      * Called once data should be decoded from the given {@link ByteBuf}. This method will call
      * {@link #decode(ChannelHandlerContext, ByteBuf, List)} as long as decoding should take place.
+     * callDecode()方法在需要从ByteBuf解码时被调用。这个方法在需要解码时会调用decode方法
      *
      * @param ctx           the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
      * @param in            the {@link ByteBuf} from which to read data
@@ -450,6 +454,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
 
                 // Check if this handler was removed before continuing the loop.
                 // If it was removed, it is not safe to continue to operate on the buffer.
+                // 需要检查handler是否已经在继续loop之前被删除，如果已经被删除，那么继续操作这个buffer是不安全的，所以break掉了
                 //
                 // See https://github.com/netty/netty/issues/1664
                 if (ctx.isRemoved()) {
@@ -497,6 +502,7 @@ public abstract class ByteToMessageDecoder extends ChannelInboundHandlerAdapter 
      * Decode the from one {@link ByteBuf} to an other. This method will be called till either the input
      * {@link ByteBuf} has nothing to read when return from this method or till nothing was read from the input
      * {@link ByteBuf}.
+     * 是decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out)的封装
      *
      * @param ctx           the {@link ChannelHandlerContext} which this {@link ByteToMessageDecoder} belongs to
      * @param in            the {@link ByteBuf} from which to read data
