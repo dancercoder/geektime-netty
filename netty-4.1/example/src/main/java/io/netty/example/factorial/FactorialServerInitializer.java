@@ -20,6 +20,8 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.compression.ZlibCodecFactory;
 import io.netty.handler.codec.compression.ZlibWrapper;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 
 /**
@@ -46,8 +48,10 @@ public class FactorialServerInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast(ZlibCodecFactory.newZlibDecoder(ZlibWrapper.GZIP));
 
         // Add the number codec first,
+        pipeline.addLast(new LoggingHandler(LogLevel.INFO));
         pipeline.addLast(new BigIntegerDecoder());
         pipeline.addLast(new NumberEncoder());
+        pipeline.addLast(new LoggingHandler(LogLevel.INFO));
 
         // and then business logic.
         // Please note we create a handler for every new channel

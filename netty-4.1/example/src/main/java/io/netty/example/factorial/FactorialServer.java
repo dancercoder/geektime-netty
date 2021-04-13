@@ -28,6 +28,7 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
 /**
  * Receives a sequence of integers from a {@link FactorialClient} to calculate
  * the factorial of the specified integer.
+ * 从客户端接收整数序列，并计算这些整数的阶乘
  */
 public final class FactorialServer {
 
@@ -45,7 +46,7 @@ public final class FactorialServer {
         }
 
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+        EventLoopGroup workerGroup = new NioEventLoopGroup(2);
         try {
             ServerBootstrap b = new ServerBootstrap();
             b.group(bossGroup, workerGroup)

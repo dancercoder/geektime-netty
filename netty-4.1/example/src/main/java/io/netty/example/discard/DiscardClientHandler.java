@@ -26,8 +26,11 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
+    private static final long SEND_INTERVAL_MILLIS = 10000;
+
     private ByteBuf content;
     private ChannelHandlerContext ctx;
+    private long lastSendTime;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -59,6 +62,7 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
 
     long counter;
 
+    //以一定的频率向server发送数据包
     private void generateTraffic() {
         // Flush the outbound buffer to the socket.
         // Once flushed, generate the same amount of traffic again.
@@ -69,6 +73,22 @@ public class DiscardClientHandler extends SimpleChannelInboundHandler<Object> {
         @Override
         public void operationComplete(ChannelFuture future) {
             if (future.isSuccess()) {
+                long currentSendTime = System.currentTimeMillis();
+                if (currentSendTime - lastSendTime > SEND_INTERVAL_MILLIS) {
+                    lastSendTime = currentSendTime;
+                } else {
+                    synchronized (future.channel()) {
+                        do {
+                            try {
+                                future.channel().wait(SEND_INTERVAL_MILLIS - (currentSendTime - lastSendTime));
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                                future.channel().close();
+                            }
+                            currentSendTime = System.currentTimeMillis();
+                        } while (currentSendTime - lastSendTime < SEND_INTERVAL_MILLIS);
+                    }
+                }
                 generateTraffic();
             } else {
                 future.cause().printStackTrace();

@@ -408,6 +408,7 @@ public class LoggingHandler extends ChannelDuplexHandler {
 
     /**
      * Generates the default log message of the specified event whose argument is an arbitrary object.
+     * 对msg进行简单字符串化输出，调用AbstractByteBuf的toString()方法
      */
     private static String formatSimple(ChannelHandlerContext ctx, String eventName, Object msg) {
         String chStr = ctx.channel().toString();

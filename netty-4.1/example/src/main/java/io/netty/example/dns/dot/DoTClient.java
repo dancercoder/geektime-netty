@@ -40,6 +40,8 @@ import io.netty.handler.codec.dns.DnsRecordType;
 import io.netty.handler.codec.dns.DnsRawRecord;
 import io.netty.handler.codec.dns.TcpDnsQueryEncoder;
 import io.netty.handler.codec.dns.TcpDnsResponseDecoder;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.util.NetUtil;
@@ -87,6 +89,7 @@ public final class DoTClient {
                             p.addLast(sslContext.newHandler(ch.alloc(), DNS_SERVER_HOST, DNS_SERVER_PORT))
                                     .addLast(new TcpDnsQueryEncoder())
                                     .addLast(new TcpDnsResponseDecoder())
+                                    .addLast(new LoggingHandler(LogLevel.INFO))
                                     .addLast(new SimpleChannelInboundHandler<DefaultDnsResponse>() {
                                         @Override
                                         protected void channelRead0(ChannelHandlerContext ctx, DefaultDnsResponse msg) {

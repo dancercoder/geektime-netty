@@ -29,6 +29,7 @@ import java.math.BigInteger;
  */
 public class FactorialServerHandler extends SimpleChannelInboundHandler<BigInteger> {
 
+    //每一个channel会有一个handler，所以没有多线程竞态发生
     private BigInteger lastMultiplier = new BigInteger("1");
     private BigInteger factorial = new BigInteger("1");
 

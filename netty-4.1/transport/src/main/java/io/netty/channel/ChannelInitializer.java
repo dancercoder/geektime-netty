@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * A special {@link ChannelInboundHandler} which offers an easy way to initialize a {@link Channel} once it was
  * registered to its {@link EventLoop}.
  * ChannelInitializer是一个特殊的ChannelInBoundHandler，在Channel注册到EventLoop之后初始化Channel。
- * 最长间的用法是，在Bootstrap#handler(ChannelHandler)、ServerBootstrap#handler(ChannelHandler)、
+ * 最常见的用法是，在Bootstrap#handler(ChannelHandler)、ServerBootstrap#handler(ChannelHandler)、
  * ServerBootstrap#childHandler(ChannelHandler)中，构建Channel的pipeline。
  *
  * initChannel()方法在channelRegistered()、handlerAdded()中被调用

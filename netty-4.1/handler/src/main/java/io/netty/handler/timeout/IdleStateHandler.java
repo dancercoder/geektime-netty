@@ -33,6 +33,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Triggers an {@link IdleStateEvent} when a {@link Channel} has not performed
  * read, write, or both operation for a while.
+ * 用于在Channel没有执行read、write或者都没有时，触发创建一个IdleStateEvent事件
  *
  * <h3>Supported idle states</h3>
  * <table border="1">
@@ -44,18 +45,21 @@ import java.util.concurrent.TimeUnit;
  * <td>an {@link IdleStateEvent} whose state is {@link IdleState#READER_IDLE}
  *     will be triggered when no read was performed for the specified period of
  *     time.  Specify {@code 0} to disable.</td>
+ *     多久之后触发READER_IDLE事件
  * </tr>
  * <tr>
  * <td>{@code writerIdleTime}</td>
  * <td>an {@link IdleStateEvent} whose state is {@link IdleState#WRITER_IDLE}
  *     will be triggered when no write was performed for the specified period of
  *     time.  Specify {@code 0} to disable.</td>
+ *     多久之后触发WRITER_IDLE
  * </tr>
  * <tr>
  * <td>{@code allIdleTime}</td>
  * <td>an {@link IdleStateEvent} whose state is {@link IdleState#ALL_IDLE}
  *     will be triggered when neither read nor write was performed for the
  *     specified period of time.  Specify {@code 0} to disable.</td>
+ *     在read和write都没有执行时，多久之后触发ALL_IDLE事件
  * </tr>
  * </table>
  *
@@ -71,7 +75,8 @@ import java.util.concurrent.TimeUnit;
  *         channel.pipeline().addLast("myHandler", new MyHandler());
  *     }
  * }
- *
+ * 例子中有一点不符合常规习惯的一点是，IdleStateHandler只能检测空闲状态的发生，实际的操作要交给pipeline中的下一个handler
+ * 不能通过扩展extends IdleStateHandler执行实际的动作，因为Idle事件被传递给了下一个handler
  * // Handler should handle the {@link IdleStateEvent} triggered by {@link IdleStateHandler}.
  * public class MyHandler extends {@link ChannelDuplexHandler} {
  *     {@code @Override}
@@ -93,10 +98,13 @@ import java.util.concurrent.TimeUnit;
  * ...
  * </pre>
  *
+ * IdleStateHandler是双向handler
+ *
  * @see ReadTimeoutHandler
  * @see WriteTimeoutHandler
  */
 public class IdleStateHandler extends ChannelDuplexHandler {
+
     private static final long MIN_TIMEOUT_NANOS = TimeUnit.MILLISECONDS.toNanos(1);
 
     // Not create a new ChannelFutureListener per write operation to reduce GC pressure.
@@ -241,6 +249,7 @@ public class IdleStateHandler extends ChannelDuplexHandler {
         if (ctx.channel().isActive() && ctx.channel().isRegistered()) {
             // channelActive() event has been fired already, which means this.channelActive() will
             // not be invoked. We have to initialize here instead.
+            // channel已经active，说明已经激活，并且this.channelActive()不会被调用，这里需要初始化
             initialize(ctx);
         } else {
             // channelActive() event has not been fired yet.  this.channelActive() will be invoked
@@ -318,6 +327,8 @@ public class IdleStateHandler extends ChannelDuplexHandler {
         initOutputChanged(ctx);
 
         lastReadTime = lastWriteTime = ticksInNanos();
+        //设置超时时间不为0，表示开启idle监控
+        //定义了三个类型的任务，检测空闲状态，分别是ReaderIdleTimeoutTask、WriterIdleTimeoutTask、AllIdleTimeoutTask
         if (readerIdleTimeNanos > 0) {
             readerIdleTimeout = schedule(ctx, new ReaderIdleTimeoutTask(ctx),
                     readerIdleTimeNanos, TimeUnit.NANOSECONDS);
@@ -366,6 +377,7 @@ public class IdleStateHandler extends ChannelDuplexHandler {
     /**
      * Is called when an {@link IdleStateEvent} should be fired. This implementation calls
      * {@link ChannelHandlerContext#fireUserEventTriggered(Object)}.
+     * 在IdleStateHandler中的特别封装，实际上要使用UserEventTriggered()方法处理
      */
     protected void channelIdle(ChannelHandlerContext ctx, IdleStateEvent evt) throws Exception {
         ctx.fireUserEventTriggered(evt);
@@ -501,6 +513,7 @@ public class IdleStateHandler extends ChannelDuplexHandler {
 
                 try {
                     IdleStateEvent event = newIdleStateEvent(IdleState.READER_IDLE, first);
+                    //read空闲，触发userEvent
                     channelIdle(ctx, event);
                 } catch (Throwable t) {
                     ctx.fireExceptionCaught(t);

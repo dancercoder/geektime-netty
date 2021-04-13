@@ -90,6 +90,7 @@ public final class DnsClient {
                     });
                  }
              });
+            //udp通信不需要使用connect
             final Channel ch = b.bind(0).sync().channel();
             DnsQuery query = new DatagramDnsQuery(null, addr, 1).setRecord(
                     DnsSection.QUESTION,
